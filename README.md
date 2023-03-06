@@ -26,16 +26,6 @@ Clone the repository to get started.
 | [Reading from MSK Serverless and writing to MSK Serverless](apps/java-datastream/msk-serverless-to-msk-serverless-datastream-java/README.md) | DataStream | Java |
 | [Reading from MSK Serverless and writing to Amazon S3](apps/python-table-api/msk-serverless-to-s3-tableapi-python/README.md) | Table | Python |
 
-## How do I use these blueprints?
-
-- To get started with a blueprint, first ensure you have the [necessary prerequisites](#prerequisites) installed.
-- Then clone this repo using the command shown below.
-
-```
-git clone https://github.com/aws-samples/amazon-kinesis-data-analytics-blueprints
-```
-- Open a terminal session and navigate to the [blueprint](#blueprints) of your choice within the project structure; once there, follow the blueprint specific instructions.
-
 ### Ensure that npm packages associated with CDK are up to date
 
 1. In the shared CDK folder, run `npm update`.
@@ -69,9 +59,19 @@ up to date, audited 457 packages in 12s
 found 0 vulnerabilities
 ```
 
-Now, you're ready to deploy your blueprint.
+Now, you're ready to [deploy blueprints](#how-do-i-use-these-blueprints).
 
 NOTE: If `npm update` doesn't actually update your dependency versions, you might have to run `npm check update` or `ncu` and manually update the dependency versions in the `package.json` files in each of the above locations.
+
+## How do I use these blueprints?
+
+- To get started with a blueprint, first ensure you have the [necessary prerequisites](#prerequisites) installed.
+- Then clone this repo using the command shown below.
+
+```
+git clone https://github.com/aws-samples/amazon-kinesis-data-analytics-blueprints
+```
+- Open a terminal session and navigate to the [blueprint](#blueprints) of your choice within the project structure; once there, follow the blueprint specific instructions.
 
 ### Experimentation
 
