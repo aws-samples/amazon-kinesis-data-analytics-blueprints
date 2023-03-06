@@ -1,4 +1,4 @@
-# KDA App - MSK Serverless to S3 (Java Datastream API)
+# MSK Serverless to S3 (Java Datastream API)
 
 This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth and writes to S3 using the Java DataStream API:
 
