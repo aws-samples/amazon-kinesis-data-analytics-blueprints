@@ -73,16 +73,6 @@ Now, you're ready to deploy your blueprint.
 
 NOTE: If `npm update` doesn't actually update your dependency versions, you might have to run `npm check update` or `ncu` and manually update the dependency versions in the `package.json` files in each of the above locations.
 
-### Deploying the blueprint
-
-- From the `cdk` folder, run the following command
-  ```bash
-  cdk deploy
-  ```
-- This will launch a CloudFormation Stack containing all the resources required for the blueprint. More details can be found in the respective blueprint.
-- Once the stack shows as CREATE_COMPLETE, you can begin sending test data through your blueprint using the respective [datagen](datagen/README.md) notebooks in the provisioned Kinesis Data Analytics Studio application.
-  - For Kinesis Data Analytics Studio and Kinesis Data Analytics applications, you may need to `Run` the application from the AWS Management Console before continuing.
-
 ### Experimentation
 
 - Once you have successfully begun sending data through your blueprint, you have successfully launched and tested a blueprint!
