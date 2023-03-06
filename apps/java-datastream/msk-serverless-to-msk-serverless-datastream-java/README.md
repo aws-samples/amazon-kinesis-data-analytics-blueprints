@@ -1,4 +1,4 @@
-# Blueprint #2 - MSK Serverless to MSK Serverless (Java Datastream API)
+# MSK Serverless to MSK Serverless (Java Datastream API)
 
 This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth and writes to MSK Serverless using the Java DataStream API.
 
