@@ -2,9 +2,13 @@
 
 This guide walks you through how to use Flink SQL and a KDA Studio Zeppelin notebook to generate synthetic data into an MSK topic. Before you can use the application, ensure that you have a Kinesis Data Analytics application that can communicate with an MSK cluster using IAM and all the proper permissions have been setup. The [blueprints](../../README.md#blueprints) contained in this repo do all of that for you.
 
-## Using the app
+NOTE: If you're new to Kinesis Data Analytics Studio, we recommend that you review the [Creating a Studio Notebook in Kinesis Data Analytics Tutorial](https://docs.aws.amazon.com/kinesisanalytics/latest/java/example-notebook.html) first.
 
-- Once you've opened up a Zeppelin notebook within the running KDA Studio application, you can create a datagen source following SQL statement in a new notebook cell:
+## Steps for generating data
+
+### Use the built-in Flink `datagen` source
+
+Once you've opened up a Zeppelin notebook within the running KDA Studio application, you can create a datagen source following SQL statement in a new notebook cell:
 
 ```SQL
 %flink.ssql
@@ -34,7 +38,9 @@ WITH (
 );
 ```
 
-- Let's now create a table against our source MSK cluster that we'll write to from the datagen source. Run the following query in a notebook cell:
+### Create streaming table into which data will be written
+
+Let's now create a table against our source MSK cluster that we'll write to from the datagen source. Run the following query in a notebook cell:
 
 ```SQL
 %flink.ssql
@@ -62,7 +68,9 @@ WITH (
 );
 ```
 
-- Now let's run the continuous data generation using the following SQL statement in a new notebook cell:
+### Run continuous data generation query
+
+Now let's run the continuous data generation using the following SQL statement in a new notebook cell:
 
 ```SQL
 %flink.ssql(parallelism=2)
@@ -78,9 +86,9 @@ SELECT
 FROM orders_datagen_source;
 ```
 
-- The above statement starts a continously running Flink job that populates synthetic data into your MSK cluster/topic. Any consumers reading from that topic will see data in the following format:
+The above statement starts a continously running Flink job that populates synthetic data into your MSK cluster/topic. Any consumers reading from that topic will see data in the following format:
 
-```JSON
+```json
 {
     'product_id': 2343,
     'order_number': 54,
@@ -91,7 +99,9 @@ FROM orders_datagen_source;
 }
 ```
 
-- We can view this stream of data using another query. Run the following in a new notebook cell:
+### (Optional) Query to view generated data
+
+We can view this stream of data using another query. Run the following in a new notebook cell:
 
 NOTE: The following query is *not* necessary for data generation. It's simply used here to valid that we're indeed generating data.
 
