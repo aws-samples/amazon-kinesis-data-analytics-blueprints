@@ -42,6 +42,8 @@ WITH (
 
 Let's now create a table against our source MSK cluster that we'll write to from the datagen source. Run the following query in a notebook cell:
 
+IMPORTANT: Make sure that you replace the placeholders for the `topic` and `properties.bootstrap.servers` with your values. If you're performing data generation to try out one of the blueprints in this repo, then you can get these values from CloudFormation Outputs tab.
+
 ```SQL
 %flink.ssql
 
