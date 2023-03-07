@@ -23,6 +23,8 @@ const sinkMskClusterName = app.node.tryGetContext('sinkMskClusterName');
 //       to also create a bucket instead.
 //       Same goes for the bucket that this app will be writing to.
 new CdkInfraKdaKafkaToKafkaStack(app, 'CdkInfraKdaKafkaToKafkaStack', {
+  region: app.region,
+  account: app.account,
   kdaAppName: kdaAppName,
   appBucket: appBucket,
   appFileKeyOnS3: appFileKeyOnS3,
