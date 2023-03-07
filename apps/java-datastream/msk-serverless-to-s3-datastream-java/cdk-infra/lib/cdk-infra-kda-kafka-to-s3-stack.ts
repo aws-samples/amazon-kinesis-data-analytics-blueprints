@@ -179,7 +179,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
           resources: [`arn:aws:glue:${this.region}:${this.account}:database/${props!.glueDatabaseName}`,
                       `arn:aws:glue:${this.region}:${this.account}:table/${props!.glueDatabaseName}/*`,
                       `arn:aws:glue:${this.region}:${this.account}:catalog`],
-          actions: ['glue:*Database*', 'glue:*Table*']
+          actions: ['glue:*Database*', 'glue:*Table*', 'glue:*Function*', 'glue:*Function*']
         }),
       ],
     });
