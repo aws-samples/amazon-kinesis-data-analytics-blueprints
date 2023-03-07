@@ -10,8 +10,6 @@ import { MSKServerlessContruct } from '../../../../../cdk-infra/shared/lib/msk-s
 import { TopicCreationLambdaConstruct } from '../../../../../cdk-infra/shared/lib/msk-topic-creation-lambda-construct';
 
 export interface GlobalProps extends StackProps {
-  account?: string;
-  region?: string;
   kdaAppName: string,
   appBucket: string,
   appFileKeyOnS3: string,
@@ -106,8 +104,8 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     const accessMSKPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:kafka:${props!.region}:${props!.account}:cluster/${props!.mskClusterName}/*`,
-                      `arn:aws:kafka:${props!.region}:${props!.account}:topic/${props!.mskClusterName}/*`],
+          resources: [`arn:aws:kafka:${this.region}:${this.account}:cluster/${props!.mskClusterName}/*`,
+                      `arn:aws:kafka:${this.region}:${this.account}:topic/${props!.mskClusterName}/*`],
           actions: ['kafka-cluster:Connect',
                     'kafka-cluster:CreateTopic',
                     'kafka-cluster:DescribeTopic',
@@ -123,7 +121,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     const accessMSKTopicsPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:kafka:${props!.region}:${props!.account}:topic/${props!.mskClusterName}/*`],
+          resources: [`arn:aws:kafka:${this.region}:${this.account}:topic/${props!.mskClusterName}/*`],
           actions: ['kafka-cluster:CreateTopic',
                     'kafka-cluster:DescribeTopic',
                     'kafka-cluster:WriteData',
@@ -139,7 +137,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     const accessCWLogsPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:logs:${props!.region}:${props!.account}:log-group:${props!.kdaLogGroup}:*`],
+          resources: [`arn:aws:logs:${this.region}:${this.account}:log-group:${props!.kdaLogGroup}:*`],
           actions: ['logs:PutLogEvents',
                     'logs:DescribeLogGroups',
                     'logs:DescribeLogStreams'
@@ -178,9 +176,9 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     const glueAccessPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:glue:${props!.region}:${props!.account}:database/${props!.glueDatabaseName}`,
-                      `arn:aws:glue:${props!.region}:${props!.account}:table/${props!.glueDatabaseName}/*`,
-                      `arn:aws:glue:${props!.region}:${props!.account}:catalog`],
+          resources: [`arn:aws:glue:${this.region}:${this.account}:database/${props!.glueDatabaseName}`,
+                      `arn:aws:glue:${this.region}:${this.account}:table/${props!.glueDatabaseName}/*`,
+                      `arn:aws:glue:${this.region}:${this.account}:catalog`],
           actions: ['glue:*Database*', 'glue:*Table*']
         }),
       ],
