@@ -17,6 +17,8 @@ const kdaLogGroup = app.node.tryGetContext('kdaLogGroup');
 const kdaLogStream = app.node.tryGetContext('kdaLogStream');
 const sourceMskClusterName = app.node.tryGetContext('sourceMskClusterName');
 const sinkMskClusterName = app.node.tryGetContext('sinkMskClusterName');
+const sourceTopicName = app.node.tryGetContext('sourceTopicName');
+const sinkTopicName = app.node.tryGetContext('sinkTopicName');
 
 // NOTE: We're not creating a bucket to hold the application jar; we
 //       expect there to be a pre-existing bucket. You can modify this stack
@@ -35,4 +37,6 @@ new CdkInfraKdaKafkaToKafkaStack(app, 'CdkInfraKdaKafkaToKafkaStack', {
   kdaLogStream: kdaLogStream,
   sourceMskClusterName: sourceMskClusterName,
   sinkMskClusterName: sinkMskClusterName,
+  sourceTopicName: sourceTopicName,
+  sinkTopicName: sinkTopicName,
 });

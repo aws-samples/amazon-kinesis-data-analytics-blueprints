@@ -22,14 +22,13 @@ export interface GlobalProps extends StackProps {
   kdaLogStream: string,
   sourceMskClusterName: string,
   sinkMskClusterName: string,
+  sourceTopicName: string,
+  sinkTopicName: string,
 }
 
 export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: GlobalProps) {
     super(scope, id, props);
-
-    const sourceTopicName = "sourceTopic";
-    const sinkTopicName = "sinkTopic";
 
     // VPC
     const vpc = new ec2.Vpc(this, 'VPC', {
@@ -91,7 +90,7 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
       vpc: vpc,
       clusterName: props!.sourceMskClusterName,
       mskSG: mskSG,
-      topicToCreate: sourceTopicName,
+      topicToCreate: props!.sourceTopicName,
       onEventLambdaFn: topicCreationLambda.onEventLambdaFn,
     });
 
@@ -105,7 +104,7 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
       vpc: vpc,
       clusterName: props!.sinkMskClusterName,
       mskSG: mskSG,
-      topicToCreate: sinkTopicName,
+      topicToCreate: props!.sinkTopicName,
       onEventLambdaFn: topicCreationLambda.onEventLambdaFn,
     });
 
@@ -192,17 +191,19 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
           resources: [`arn:aws:glue:${this.region}:${this.account}:database/${props!.glueDatabaseName}`,
                       `arn:aws:glue:${this.region}:${this.account}:table/${props!.glueDatabaseName}/*`,
                       `arn:aws:glue:${this.region}:${this.account}:catalog`],
-          actions: ['glue:*Database*', 'glue:*Table*', 'glue:*Function*']
+          actions: ['glue:*Database*', 'glue:*Table*']
         }),
       ],
     });
 
-    // our KDA app needs to be able to GetDatabase
+    // our KDA app needs to be able to GetDatabase, GetUserDefinedFunction and GetPartitions
     const glueGetDBAccessPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
           resources: ['*'],
-          actions: ['glue:GetDatabase']
+          actions: ['glue:GetDatabase',
+                    'glue:GetUserDefinedFunction',
+                    'glue:GetPartitions']
         }),
       ],
     });
@@ -242,8 +243,8 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
     const flinkApplicationProps = {
       "SourceServerlessMSKBootstrapServers": sourceServerlessMskCluster.bootstrapServersOutput.value,
       "SinkServerlessMSKBootstrapServers": sinkServerlessMskCluster.bootstrapServersOutput.value,
-      "KafkaSourceTopic": sourceTopicName,
-      "KafkaSinkTopic": sinkTopicName,
+      "KafkaSourceTopic": props!.sourceTopicName,
+      "KafkaSinkTopic": props!.sinkTopicName,
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
     };
 

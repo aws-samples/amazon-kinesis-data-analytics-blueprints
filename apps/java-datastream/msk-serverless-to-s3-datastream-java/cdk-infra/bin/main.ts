@@ -17,6 +17,7 @@ const deployDataGen = app.node.tryGetContext('deployDataGen');
 const kdaLogGroup = app.node.tryGetContext('kdaLogGroup');
 const kdaLogStream = app.node.tryGetContext('kdaLogStream');
 const mskClusterName = app.node.tryGetContext('mskClusterName');
+const sourceTopicName = app.node.tryGetContext('sourceTopicName');
 
 // NOTE: We're not creating a bucket to hold the application jar; we
 //       expect there to be a pre-existing bucket. You can modify this stack
@@ -35,4 +36,5 @@ new CdkInfraKdaKafkaToS3Stack(app, 'CdkInfraKdaKafkaToS3Stack', {
   kdaLogGroup: kdaLogGroup,
   kdaLogStream: kdaLogStream,
   mskClusterName: mskClusterName,
+  sourceTopicName: sourceTopicName,
 });

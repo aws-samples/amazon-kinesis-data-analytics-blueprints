@@ -24,13 +24,12 @@ export interface GlobalProps extends StackProps {
   kdaLogGroup: string,
   kdaLogStream: string,
   mskClusterName: string,
+  sourceTopicName: string,
 }
 
 export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: GlobalProps) {
     super(scope, id, props);
-
-    const sourceTopicName = "sourceTopic";
 
     // VPC
     const vpc = new ec2.Vpc(this, 'VPC', {
@@ -92,7 +91,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       vpc: vpc,
       clusterName: props!.mskClusterName,
       mskSG: mskSG,
-      topicToCreate: sourceTopicName,
+      topicToCreate: props!.sourceTopicName,
       onEventLambdaFn: topicCreationLambda.onEventLambdaFn,
     });
 
@@ -181,7 +180,19 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
           resources: [`arn:aws:glue:${this.region}:${this.account}:database/${props!.glueDatabaseName}`,
                       `arn:aws:glue:${this.region}:${this.account}:table/${props!.glueDatabaseName}/*`,
                       `arn:aws:glue:${this.region}:${this.account}:catalog`],
-          actions: ['glue:*Database*', 'glue:*Table*', 'glue:*Function*']
+          actions: ['glue:*Database*', 'glue:*Table*']
+        }),
+      ],
+    });
+
+    // our KDA app needs to be able to GetDatabase, GetUserDefinedFunction and GetPartitions
+    const glueGetDBAccessPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          resources: ['*'],
+          actions: ['glue:GetDatabase',
+                    'glue:GetUserDefinedFunction',
+                    'glue:GetPartitions']
         }),
       ],
     });
@@ -214,13 +225,14 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
         AccessVPCPolicy: accessVPCPolicy,
         KDAAccessPolicy: kdaAccessPolicy,
         GlueAccessPolicy: glueAccessPolicy,
+        GlueGetDBAccessPolicy: glueGetDBAccessPolicy,
       },
     });
 
     const flinkApplicationProps = {
       "S3DestinationBucket": props!.appSinkBucket,
       "ServerlessMSKBootstrapServers": sourceServerlessMskCluster.bootstrapServersOutput.value,
-      "KafkaSourceTopic": sourceTopicName,
+      "KafkaSourceTopic": props!.sourceTopicName,
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
     };
 

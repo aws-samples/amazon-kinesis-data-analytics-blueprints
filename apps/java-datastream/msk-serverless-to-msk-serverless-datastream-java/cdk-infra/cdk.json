@@ -47,6 +47,8 @@
     "kdaLogGroup": "",
     "kdaLogStream": "",
     "sourceMskClusterName": "",
-    "sinkMskClusterName": ""
+    "sinkMskClusterName": "",
+    "sourceTopicName": "sourceTopic",
+    "sinkTopicName": "sinkTopic"
   }
 }
