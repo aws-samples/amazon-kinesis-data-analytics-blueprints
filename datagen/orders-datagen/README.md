@@ -47,6 +47,10 @@ IMPORTANT: Make sure that you replace the placeholders for the `topic` and `prop
 ```SQL
 %flink.ssql
 
+-- IMPORTANT!!: Please replace
+-- <<your topic>> with your source topic
+-- <<your broker>> with your broker
+
 DROP TABLE IF EXISTS orders_msk;
 
 CREATE TABLE orders_msk (
