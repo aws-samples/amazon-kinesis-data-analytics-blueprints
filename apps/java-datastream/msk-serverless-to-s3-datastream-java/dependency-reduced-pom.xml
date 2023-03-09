@@ -135,7 +135,7 @@
   </dependencies>
   <properties>
     <scala.binary.version>2.12</scala.binary.version>
-    <flink.format.parquet.version>1.11.1</flink.format.parquet.version>
+    <flink.format.parquet.version>1.12.2</flink.format.parquet.version>
     <maven.compiler.source>1.11</maven.compiler.source>
     <jackson.databind.version>2.13.4.2</jackson.databind.version>
     <jackson.version>2.13.4</jackson.version>
