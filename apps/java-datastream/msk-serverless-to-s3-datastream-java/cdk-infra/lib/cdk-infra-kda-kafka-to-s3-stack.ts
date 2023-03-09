@@ -230,7 +230,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     });
 
     const flinkApplicationProps = {
-      "S3DestinationBucket": props!.appSinkBucket,
+      "S3DestinationBucket": `s3://${props!.appSinkBucket}`,
       "ServerlessMSKBootstrapServers": sourceServerlessMskCluster.bootstrapServersOutput.value,
       "KafkaSourceTopic": props!.sourceTopicName,
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
