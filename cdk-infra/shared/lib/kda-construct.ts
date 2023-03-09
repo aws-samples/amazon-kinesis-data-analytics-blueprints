@@ -55,7 +55,7 @@ export class KDAConstruct extends Construct {
                         configurationType: "CUSTOM",
                         parallelism: 2,
                         parallelismPerKpu: 1,
-                        autoScalingEnabled: true
+                        autoScalingEnabled: false
                     }
                 },
                 vpcConfigurations: [

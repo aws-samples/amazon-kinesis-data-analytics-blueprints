@@ -38,6 +38,14 @@ export class KDAZepConstruct extends Construct {
       applicationMode: "INTERACTIVE",
 
       applicationConfiguration: {
+        flinkApplicationConfiguration: {
+          parallelismConfiguration: {
+            configurationType: "CUSTOM",
+            parallelism: 2,
+            parallelismPerKpu: 1,
+            autoScalingEnabled: false
+          }
+        },
         vpcConfigurations: [
           {
             subnetIds: props.vpc.selectSubnets({

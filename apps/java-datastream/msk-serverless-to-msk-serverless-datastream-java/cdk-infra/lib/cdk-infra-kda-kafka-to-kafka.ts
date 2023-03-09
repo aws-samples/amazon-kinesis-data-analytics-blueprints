@@ -72,6 +72,8 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // This is the code for the lambda function that auto-creates the source topic
+    // We need to pass in the path from the calling location
     const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/kafka-topic-gen-lambda-1.0.jar';
 
     const topicCreationLambda = new TopicCreationLambdaConstruct(this, 'TopicCreationLambda', {
@@ -118,7 +120,9 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
       statements: [
         new iam.PolicyStatement({
           resources: [`arn:aws:kafka:${this.region}:${this.account}:cluster/${props!.sourceMskClusterName}/*`,
-                      `arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sourceMskClusterName}/*`],
+                      `arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sourceMskClusterName}/*`,
+                      `arn:aws:kafka:${this.region}:${this.account}:cluster/${props!.sinkMskClusterName}/*`,
+                      `arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sinkMskClusterName}/*`],
           actions: ['kafka-cluster:Connect',
                     'kafka-cluster:CreateTopic',
                     'kafka-cluster:DescribeTopic',
@@ -134,7 +138,8 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
     const accessMSKTopicsPolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sourceMskClusterName}/*`],
+          resources: [`arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sourceMskClusterName}/*`,
+                      `arn:aws:kafka:${this.region}:${this.account}:topic/${props!.sinkMskClusterName}/*`],
           actions: ['kafka-cluster:CreateTopic',
                     'kafka-cluster:DescribeTopic',
                     'kafka-cluster:WriteData',

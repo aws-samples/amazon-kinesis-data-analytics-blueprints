@@ -75,7 +75,7 @@ WITH (
 Now let's run the continuous data generation using the following SQL statement in a new notebook cell:
 
 ```SQL
-%flink.ssql(parallelism=2)
+%flink.ssql(parallelism=1)
 
 INSERT INTO orders_msk
 SELECT 
@@ -108,7 +108,7 @@ We can view this stream of data using another query. Run the following in a new 
 NOTE: The following query is *not* necessary for data generation. It's simply used here to valid that we're indeed generating data.
 
 ```SQL
-%flink.ssql(type=update, parallelism=2)
+%flink.ssql(type=update, parallelism=1)
 
 select * from orders_msk;
 ```

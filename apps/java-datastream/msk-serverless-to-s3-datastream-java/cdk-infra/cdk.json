@@ -49,7 +49,7 @@
     "deployDataGen": false,
     "kdaLogGroup": "",
     "kdaLogStream": "",
-    "sourceMskClusterName": "",
+    "mskClusterName": "",
     "sourceTopicName": "sourceTopic"
   }
 }

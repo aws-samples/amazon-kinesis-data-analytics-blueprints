@@ -71,6 +71,8 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // This is the code for the lambda function that auto-creates the source topic
+    // We need to pass in the path from the calling location
     const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/kafka-topic-gen-lambda-1.0.jar';
 
     const topicCreationLambda = new TopicCreationLambdaConstruct(this, 'TopicCreationLambda', {
@@ -150,8 +152,8 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     const accessS3Policy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:s3:::${props!.appBucket}`,
-                      `arn:aws:s3:::${props!.appSinkBucket}`],
+          resources: [`arn:aws:s3:::${props!.appBucket}/*`,
+                      `arn:aws:s3:::${props!.appSinkBucket}/*`],
           actions: ['s3:ListBucket',
                     's3:PutObject',
                     's3:GetObject',
