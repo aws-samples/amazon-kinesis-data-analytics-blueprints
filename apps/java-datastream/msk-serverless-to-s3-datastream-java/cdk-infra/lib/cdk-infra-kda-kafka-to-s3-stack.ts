@@ -234,6 +234,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       "ServerlessMSKBootstrapServers": sourceServerlessMskCluster.bootstrapServersOutput.value,
       "KafkaSourceTopic": props!.sourceTopicName,
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
+      "PartitionFormat": "yyyy-MM-dd-HH",
     };
 
     // instantiate kda construct
