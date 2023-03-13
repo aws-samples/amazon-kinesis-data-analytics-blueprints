@@ -2,6 +2,8 @@
 
 This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth and writes to MSK Serverless using the Java DataStream API.
 
+![Arch diagram](img/msk-kda-msk.png)
+
 ## Project details
 
 1. Flink version: `1.15.2`

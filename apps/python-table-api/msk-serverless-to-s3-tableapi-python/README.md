@@ -2,7 +2,7 @@
 
 This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth and writes to S3 using the Python Table API:
 
-[Arch Diagram]
+![Arch diagram](img/msk-kda-s3.png)
 
 ## Project details
 
