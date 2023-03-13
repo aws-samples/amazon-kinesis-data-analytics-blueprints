@@ -3,21 +3,16 @@
       "PropertyGroupId": "kinesis.analytics.flink.run.options",
       "PropertyMap": {
         "python": "pyflink-app.py",
-        "jarfile": "lib/flink-sql-connector-kinesis_2.11-1.13.2.jar"
+        "jarfile": "lib/uber-jar-for-pyflink-1.0.1.jar"
       }
     },
     {
-      "PropertyGroupId": "source.config",
+      "PropertyGroupId": "FlinkApplicationProperties",
       "PropertyMap": {
-        "source.bootstrap_servers": "input-stream",
-        "source.topic": "DatagenTopic",
-        "source.format": "json"
-      }
-    },
-    {
-      "PropertyGroupId": "sink.config",
-      "PropertyMap": {
-        "sink.path": "s3://flinks3tests-east2"
+        "source.bootstrap_servers": "servers",
+        "source.topic": "sourceTopic",
+        "source.format": "json",
+        "sink.path": "s3://mys3sinkbucket"
       }
     }
   ]

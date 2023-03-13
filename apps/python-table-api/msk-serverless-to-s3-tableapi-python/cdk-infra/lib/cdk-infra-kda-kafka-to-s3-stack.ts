@@ -238,6 +238,11 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
     };
 
+    const pyFlinkRunOptions = {
+      "python": "pyflink-app.py",
+      "jarfile": "lib/uber-jar-for-pyflink-1.0.1.jar",
+    }
+
     // instantiate kda construct
     const kdaConstruct = new KDAConstruct(this, 'KDAConstruct', {
       account: this.account,
@@ -252,6 +257,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       runtimeEnvironment: props!.runtimeEnvironment,
       serviceExecutionRole: kdaAppRole.roleArn,
       flinkApplicationProperties: flinkApplicationProps,
+      pyFlinkRunOptions: pyFlinkRunOptions,
     });
 
     kdaConstruct.node.addDependency(vpc);

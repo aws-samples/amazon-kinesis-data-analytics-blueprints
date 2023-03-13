@@ -1,12 +1,7 @@
-from pyflink.table import EnvironmentSettings, StreamTableEnvironment, TableEnvironment
-from pyflink.common import Configuration
-from pyflink.table import DataTypes
-from pyflink.table.udf import udf
-from pyflink.table.expressions import lit, col, call
-import os
-from pathlib import Path
 import json
+import os
 
+from pyflink.table import EnvironmentSettings, TableEnvironment
 
 env_settings = EnvironmentSettings \
     .new_instance() \
@@ -17,8 +12,6 @@ table_env = TableEnvironment.create(env_settings)
 
 APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"  # on kda
 
-# TODO: See if there's a better way to determine whether we're running
-#       in the cloud
 is_local = (
     # set this env var in your local environment
     True if os.environ.get("IS_LOCAL") else False
@@ -42,14 +35,6 @@ if is_local:
     pipeline_jars_var = ""
     for cp in connectors:
         pipeline_jars_var = f"{pipeline_jars_var}file://{CURRENT_DIR}/lib/{cp};"
-
-    # kafka_connector_path = "file:///Users/karthit/code/aws/kda/kda-blueprints-internal/apps/python-table-api/msk-serverless-to-s3-tableapi-python/src/lib/flink-sql-connector-kafka-1.15.2.jar"
-    # filesystem_connector_path = "file:///Users/karthit/code/aws/kda/kda-blueprints-internal/apps/python-table-api/msk-serverless-to-s3-tableapi-python/src/lib/flink-connector-files-1.15.2.jar"
-    # flink_parquet_lib_path = "file:///Users/karthit/code/aws/kda/kda-blueprints-internal/apps/python-table-api/msk-serverless-to-s3-tableapi-python/src/lib/flink-sql-parquet-1.15.2.jar"
-    # hadoop_common_lib_path = "file:///Users/karthit/code/aws/kda/kda-blueprints-internal/apps/python-table-api/msk-serverless-to-s3-tableapi-python/src/lib/hadoop-common-2.10.1.jar"
-    # hadoop_mapreduce_core_path = "file:///Users/karthit/code/aws/kda/kda-blueprints-internal/apps/python-table-api/msk-serverless-to-s3-tableapi-python/src/lib/hadoop-mapreduce-client-core-2.10.1.jar"
-
-    #table_env.get_config().get_configuration().set_string("pipeline.jars", f"{kafka_connector_path};{hadoop_common_lib_path};{hadoop_mapreduce_core_path};{flink_parquet_lib_path}")
 
     pipeline_jars_var = pipeline_jars_var.rstrip(";")
     print(pipeline_jars_var)
@@ -78,10 +63,9 @@ def property_map(props, property_group_id):
 def msk_to_s3():
 
     app_props = get_application_properties()
-    source_config_props = property_map(app_props, "source.config")
-    sink_config_props = property_map(app_props, "sink.config")
+    flink_app_props = property_map(app_props, "FlinkApplicationProperties")
 
-    print(sink_config_props)
+    print(flink_app_props)
 
     table_env.execute_sql("DROP TABLE IF EXISTS source_kafka")
     source_ddl = f"""
@@ -95,11 +79,15 @@ def msk_to_s3():
         )
         WITH (
         'connector'= 'kafka',
-        'format' = '{source_config_props["source.format"]}',
-        'topic' = '{source_config_props["source.topic"]}',
+        'format' = 'json',
+        'topic' = '{flink_app_props["KafkaSourceTopic"]}',
         'scan.startup.mode' = 'earliest-offset',
-        'properties.bootstrap.servers' = '{source_config_props["source.bootstrap_servers"]}',
-        'properties.group.id' = 'testGroup'
+        'properties.bootstrap.servers' = '{flink_app_props["ServerlessMSKBootstrapServers"]}',
+        'properties.group.id' = 'testGroup',
+        'properties.security.protocol' = 'SASL_SSL',
+        'properties.sasl.mechanism' = 'AWS_MSK_IAM',
+        'properties.sasl.jaas.config' = 'software.amazon.msk.auth.iam.IAMLoginModule required;',
+        'properties.sasl.client.callback.handler.class' = 'software.amazon.msk.auth.iam.IAMClientCallbackHandler'
         )
         """
 
@@ -116,7 +104,7 @@ def msk_to_s3():
         WITH (
         'connector'= 'filesystem',
         'format' = 'parquet',
-        'path' = '{sink_config_props["sink.path"]}'
+        'path' = 's3://{flink_app_props["S3DestinationBucket"]}/'
         )
         """
 

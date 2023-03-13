@@ -2,22 +2,17 @@
     {
       "PropertyGroupId": "kinesis.analytics.flink.run.options",
       "PropertyMap": {
-        "python": "python-packages.py",
-        "jarfile": "lib/flink-sql-connector-kinesis_2.11-1.13.2.jar"
+        "python": "pyflink-app.py",
+        "jarfile": "lib/uber-jar-for-pyflink-1.0.1.jar"
       }
     },
     {
-      "PropertyGroupId": "source.config",
+      "PropertyGroupId": "FlinkApplicationProperties",
       "PropertyMap": {
         "source.bootstrap_servers": "localhost:9092",
-        "source.topic": "DatagenTopic",
-        "source.format": "json"
-      }
-    },
-    {
-      "PropertyGroupId": "sink.config",
-      "PropertyMap": {
-        "sink.path": "file:///Users/karthit/Downloads/flinkout/"
+        "source.topic": "sourceTopic",
+        "source.format": "json",
+        "sink.path": "/tmp"
       }
     }
   ]

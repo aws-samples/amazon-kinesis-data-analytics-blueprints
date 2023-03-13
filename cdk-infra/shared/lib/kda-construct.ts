@@ -18,6 +18,7 @@ export interface KDAContructProps extends StackProps {
     runtimeEnvironment: string,
     serviceExecutionRole: string,
     flinkApplicationProperties: { [key: string]: string; } | undefined,
+    pyFlinkRunOptions:  { [key: string]: string; } | undefined,
 }
 
 export class KDAConstruct extends Construct {
@@ -27,6 +28,20 @@ export class KDAConstruct extends Construct {
 
     constructor(scope: Construct, id: string, props: KDAContructProps) {
         super(scope, id);
+
+        let propertyGroups = [
+            {
+                propertyGroupId: "FlinkApplicationProperties",
+                propertyMap: props.flinkApplicationProperties
+            }
+        ];
+
+        if(props!.pyFlinkRunOptions != null) {
+            propertyGroups.push({
+                propertyGroupId: "kinesis.analytics.flink.run.options",
+                propertyMap: props!.pyFlinkRunOptions
+            });
+        }
 
         // application properties (actual app is below)
         this.cfnApplicationProps = {
@@ -67,12 +82,7 @@ export class KDAConstruct extends Construct {
                     }
                 ],
                 environmentProperties: {
-                    propertyGroups: [
-                        {
-                            propertyGroupId: "FlinkApplicationProperties",
-                            propertyMap: props.flinkApplicationProperties
-                        }
-                    ]
+                    propertyGroups: propertyGroups
                 },
                 applicationCodeConfiguration: {
                     codeContent: {
