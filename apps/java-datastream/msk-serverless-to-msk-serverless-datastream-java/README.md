@@ -59,4 +59,4 @@ aws s3 cp target/<<your generated jar>> ${S3_BUCKET}/{S3_FILE_KEY}
 
 6. Start your Kinesis Data Analytics application from the AWS console.
 
-7. Do a Flink query or S3 Select Query against S3 to view data written to S3.
+7. Do a Flink query against the Destination Kafka Topic to validate data has landed in the destination topic.
