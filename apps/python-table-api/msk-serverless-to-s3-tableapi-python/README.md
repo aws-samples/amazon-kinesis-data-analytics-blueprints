@@ -40,7 +40,9 @@ export S3_FILE_KEY=<<your-jar-name-on-s3>>
 
 2. Package Python app folder into zip package
 
-```
+Assuming you want to name your zip file `kdaApp.zip`, run:
+
+```bash
 zip kdaApp.zip * lib/*
 ```
 
