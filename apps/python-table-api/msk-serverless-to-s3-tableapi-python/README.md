@@ -40,7 +40,11 @@ export S3_FILE_KEY=<<your-jar-name-on-s3>>
 
 2. Package Python app folder into zip package
 
-Please follow the instructions detailed [here](https://github.com/aws-samples/amazon-kinesis-data-analytics-examples/tree/master/python/PythonPackages).
+```
+zip kdaApp.zip * lib/*
+```
+
+For more information on packaging PyFlink applications, please follow the instructions detailed [here](https://github.com/aws-samples/amazon-kinesis-data-analytics-examples/tree/master/python/PythonPackages). And for additional information on developing PyFlink applications locally and then deploying to Kinesis Data Analytics, please see [Getting Started with PyFlink](https://github.com/aws-samples/pyflink-getting-started).
 
 3. Copy zip package to S3 so it can be referenced in CDK deployment
 

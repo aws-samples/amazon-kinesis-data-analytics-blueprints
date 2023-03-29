@@ -30,6 +30,8 @@ This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth a
 
 ## Step-by-step deployment walkthrough
 
+0. If you haven't run `cdk bootstrap` please do so first. This is necesary on a region basis.
+
 1. First, let's set up some environment variables to make the deployment easier. Replace these values with your own S3 bucket, app name, etc.
 
 ```bash

@@ -46,7 +46,7 @@
     "glueDatabaseName": "",
     "flinkVersion": "1.15.2",
     "zepFlinkVersion": "1.13.2",
-    "deployDataGen": false,
+    "deployDataGen": "false",
     "kdaLogGroup": "",
     "kdaLogStream": "",
     "mskClusterName": "",

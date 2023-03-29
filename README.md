@@ -47,8 +47,11 @@ found 0 vulnerabilities
 ```
 
 Navigate to your blueprint folder (from root of this repo)
+
 ```
 > cd apps/java-datastream/msk-serverless-to-s3-datastream-java
+> npm install
+...
 > npm update
 
 up to date, audited 457 packages in 12s
