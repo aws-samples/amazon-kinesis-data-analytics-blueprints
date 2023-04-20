@@ -22,9 +22,9 @@ Clone the repository to get started.
 
 | Description | Flink API | Language
 | --- | --- | --- |
-| [Reading from MSK Serverless and writing to Amazon S3](apps/java-datastream/msk-serverless-to-s3-datastream-java/README.md) | DataStream | Java |
-| [Reading from MSK Serverless and writing to MSK Serverless](apps/java-datastream/msk-serverless-to-msk-serverless-datastream-java/README.md) | DataStream | Java |
-| [Reading from MSK Serverless and writing to Amazon S3](apps/python-table-api/msk-serverless-to-s3-tableapi-python/README.md) | Table | Python |
+| <font size="4">[Reading from MSK Serverless and writing to Amazon S3](apps/java-datastream/msk-serverless-to-s3-datastream-java/README.md) </font> | DataStream | Java |
+| <font size="4">[Reading from MSK Serverless and writing to MSK Serverless](apps/java-datastream/msk-serverless-to-msk-serverless-datastream-java/README.md) </font> | DataStream | Java |
+| <font size="4">[Reading from MSK Serverless and writing to Amazon S3](apps/python-table-api/msk-serverless-to-s3-tableapi-python/README.md) </font> | Table | Python |
 
 ### Ensure that npm packages associated with CDK are up to date
 
