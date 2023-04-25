@@ -11,7 +11,7 @@ This blueprint deploys a KDA app that reads from Kinesis Data Streams (KDS) usin
 
 ## Key components used
 
-1. New (in Flink 1.13) `KafkaSource` connector (`FlinkKafkaSource` is slated to be deprecated).
+1. `FlinkKinesisConsumer`.
 2. `FileSink` (`StreamingFileSink` is slated to be deprecated).
 
 ## High-level deployment steps
@@ -28,8 +28,6 @@ This blueprint deploys a KDA app that reads from Kinesis Data Streams (KDS) usin
 2. AWS CDK v2 - for deploying associated infra (KDS Stream and KDA app)
 
 ## Step-by-step deployment walkthrough
-
-NOTE: If you're redeploying app, see Redeployment section below.
 
 1. First, let's set up some environment variables to make the deployment easier. Replace these values with your own S3 bucket, app name, etc.
 

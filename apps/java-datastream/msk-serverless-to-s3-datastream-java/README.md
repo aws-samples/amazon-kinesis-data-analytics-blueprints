@@ -29,8 +29,6 @@ This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth a
 
 ## Step-by-step deployment walkthrough
 
-NOTE: If you're redeploying app, see Redeployment section below.
-
 1. First, let's set up some environment variables to make the deployment easier. Replace these values with your own S3 bucket, app name, etc.
 
 ```bash
