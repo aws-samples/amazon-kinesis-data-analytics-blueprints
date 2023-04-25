@@ -267,7 +267,7 @@ export class CdkInfraKdaKafkaToKafkaStack extends cdk.Stack {
       runtimeEnvironment: props!.runtimeEnvironment,
       serviceExecutionRole: kdaAppRole.roleArn,
       flinkApplicationProperties: flinkApplicationProps,
-      pyFlinkRunOptions: {},
+      pyFlinkRunOptions: null,
     });
 
     kdaConstruct.node.addDependency(vpc);

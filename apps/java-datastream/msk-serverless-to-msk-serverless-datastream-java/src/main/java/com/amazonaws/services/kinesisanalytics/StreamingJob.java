@@ -1,21 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.amazonaws.services.kinesisanalytics;
 
 import com.amazonaws.services.kinesisanalytics.orders.Order;
@@ -24,6 +6,7 @@ import com.amazonaws.services.kinesisanalytics.orders.OrderSerializationSchema;
 import com.amazonaws.services.kinesisanalytics.runtime.KinesisAnalyticsRuntime;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
@@ -168,12 +151,25 @@ public class StreamingJob {
 
 	private static void runAppWithKafkaSource(StreamExecutionEnvironment env,
 											  Properties appProperties) {
-
+		// Source
 		KafkaSource<Order> orderSource = getKafkaSource(env, appProperties);
 		DataStream<Order> orderStream = env.fromSource(orderSource,
 				WatermarkStrategy.noWatermarks(),
 				"Kafka Source");
 
+		// Do your processing here.
+		// We've included a simple transform, but you can replace this with your own
+		// custom processing. Please see the official Apache Flink docs:
+		// https://nightlies.apache.org/flink/flink-docs-stable/
+		// for more ideas.
+		orderStream.flatMap((FlatMapFunction<Order, Order>) (order, out) -> {
+			// Filter out orders with order number less than 150
+			if(order.order_number >= 150) {
+				out.collect(order);
+			}
+		});
+
+		// Sink
 		KafkaSink<Order> orderSink = getKafkaSink(env, appProperties);
 		DataStreamSink<Order> sink = orderStream.sinkTo(orderSink).name("Kafka Sink");
 
@@ -188,10 +184,6 @@ public class StreamingJob {
 		// set up the streaming execution environment
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
-
-		// Only for debugging
-		// TODO: remove this
-		env.disableOperatorChaining();
 
 		// Only for local
 		// Configure via KDA when running in cloud

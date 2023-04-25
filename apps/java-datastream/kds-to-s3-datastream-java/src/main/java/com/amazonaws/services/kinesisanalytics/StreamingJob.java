@@ -5,12 +5,9 @@ import com.amazonaws.services.kinesisanalytics.orders.OrderDateBucketAssigner;
 import com.amazonaws.services.kinesisanalytics.orders.OrderDeserializationSchema;
 import com.amazonaws.services.kinesisanalytics.runtime.KinesisAnalyticsRuntime;
 import org.apache.flink.api.common.RuntimeExecutionMode;
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.connector.file.sink.FileSink;
-import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.formats.parquet.avro.ParquetAvroWriters;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -18,6 +15,10 @@ import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.environment.LocalStreamEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.OnCheckpointRollingPolicy;
+import org.apache.flink.streaming.connectors.kinesis.FlinkKinesisConsumer;
+import org.apache.flink.streaming.connectors.kinesis.config.AWSConfigConstants;
+import org.apache.flink.streaming.connectors.kinesis.config.ConsumerConfigConstants;
+import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +30,9 @@ public class StreamingJob {
 
 	private static final Logger LOG = LoggerFactory.getLogger(StreamingJob.class);
 
-	private static final String SERVERLESS_MSKBOOTSTRAP_SERVERS = "ServerlessMSKBootstrapServers";
-	private static final String KAFKA_SOURCE_TOPIC_KEY = "KafkaSourceTopic";
-	private static final String KAFKA_CONSUMER_GROUP_ID_KEY = "KafkaConsumerGroupId";
+	private static final String KINESIS_STREAM_NAME = "KinesisStreamName";
+	private static final String AWS_REGION = "AWSRegion";
+	private static final String STREAM_INITIAL_POSITION = "StreamInitialPosition";
 	private static final String S3_DEST_KEY = "S3DestinationBucket";
 	private static final String SINK_PARALLELISM_KEY = "SinkParallelism";
 	private static final String PARTITION_FORMAT_KEY = "PartitionFormat";
@@ -47,18 +48,18 @@ public class StreamingJob {
 			return null;
 		}
 
-		if(!flinkProperties.containsKey(SERVERLESS_MSKBOOTSTRAP_SERVERS)) {
-			LOG.error("Unable to retrieve property: " + SERVERLESS_MSKBOOTSTRAP_SERVERS);
+		if(!flinkProperties.containsKey(KINESIS_STREAM_NAME)) {
+			LOG.error("Unable to retrieve property: " + KINESIS_STREAM_NAME);
 			return null;
 		}
 
-		if(!flinkProperties.containsKey(KAFKA_SOURCE_TOPIC_KEY)) {
-			LOG.error("Unable to retrieve property: " + KAFKA_SOURCE_TOPIC_KEY);
+		if(!flinkProperties.containsKey(AWS_REGION)) {
+			LOG.error("Unable to retrieve property: " + AWS_REGION);
 			return null;
 		}
 
-		if(!flinkProperties.containsKey(KAFKA_CONSUMER_GROUP_ID_KEY)) {
-			LOG.error("Unable to retrieve property: " + KAFKA_CONSUMER_GROUP_ID_KEY);
+		if(!flinkProperties.containsKey(STREAM_INITIAL_POSITION)) {
+			LOG.error("Unable to retrieve property: " + STREAM_INITIAL_POSITION);
 			return null;
 		}
 
@@ -79,37 +80,32 @@ public class StreamingJob {
 		return env instanceof LocalStreamEnvironment;
 	}
 
-	private static KafkaSource<Order> getKafkaSource(StreamExecutionEnvironment env,
-													 Properties appProperties) {
+	private static FlinkKinesisConsumer<Order> getKinesisSource(StreamExecutionEnvironment env,
+																Properties appProperties) {
 
-		KafkaSourceBuilder<Order> builder =
-				KafkaSource.builder();
+		String streamName = "myKinesisStream";
+		String regionStr = "us-east-1";
+		String streamInitPos = "LATEST";
 
-		// different values for local
-		String brokers = "localhost:9092";
-		String inputTopic = "DatagenTopic";
-		String consumerGroupId = "myConsumerGroup";
 		if(!isLocal(env)) {
-			brokers = appProperties.get(SERVERLESS_MSKBOOTSTRAP_SERVERS).toString();
-			inputTopic = appProperties.get(KAFKA_SOURCE_TOPIC_KEY).toString();
-			consumerGroupId = appProperties.get(KAFKA_CONSUMER_GROUP_ID_KEY).toString();
-
-			// setup IAM auth
-			builder.setProperty("security.protocol", "SASL_SSL");
-			builder.setProperty("sasl.mechanism", "AWS_MSK_IAM");
-			builder.setProperty("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
-			builder.setProperty("sasl.client.callback.handler.class", "software.amazon.msk.auth.iam.IAMClientCallbackHandler");
+			streamName = appProperties.get(KINESIS_STREAM_NAME).toString();
+			regionStr = appProperties.get(AWS_REGION).toString();
+			streamInitPos = appProperties.get(STREAM_INITIAL_POSITION).toString();
 		}
 
-		KafkaSource<Order> source = builder
-				.setBootstrapServers(brokers)
-				.setTopics(inputTopic)
-				.setGroupId(consumerGroupId)
-				.setStartingOffsets(OffsetsInitializer.earliest())
-				.setValueOnlyDeserializer(new OrderDeserializationSchema())
-				.build();
+		Properties consumerConfig = new Properties();
+		consumerConfig.put(AWSConfigConstants.AWS_REGION, regionStr);
+		consumerConfig.put(ConsumerConfigConstants.STREAM_INITIAL_POSITION, streamInitPos);
+		// Default is POLLING, but we're specifying it explicitly here.
+		consumerConfig.put(ConsumerConfigConstants.RECORD_PUBLISHER_TYPE,
+						   ConsumerConfigConstants.RecordPublisherType.POLLING.name());
 
-		return source;
+		DeserializationSchema<Order> deserializationSchema = new OrderDeserializationSchema();
+
+		FlinkKinesisConsumer<Order> kinesisOrderSource = new FlinkKinesisConsumer<>(streamName,
+																					deserializationSchema,
+																					consumerConfig);
+		return kinesisOrderSource;
 	}
 
 	private static FileSink<Order> getFileSink(StreamExecutionEnvironment env,
@@ -137,13 +133,11 @@ public class StreamingJob {
 		return sink;
 	}
 
-	private static void runAppWithKafkaSource(StreamExecutionEnvironment env,
-											  Properties appProperties) {
+	private static void runAppWithKinesisSource(StreamExecutionEnvironment env,
+												Properties appProperties) {
 		// Source
-		KafkaSource<Order> orderSource = getKafkaSource(env, appProperties);
-		DataStream<Order> orderStream = env.fromSource(orderSource,
-				WatermarkStrategy.noWatermarks(),
-				"Kafka Source");
+		FlinkKinesisConsumer<Order> orderSource = getKinesisSource(env, appProperties);
+		DataStream<Order> orderStream = env.addSource(orderSource, "Kinesis source");
 
 		// Do your processing here.
 		// We've included a simple transform, but you can replace this with your own
@@ -159,7 +153,7 @@ public class StreamingJob {
 
 		// Sink
 		FileSink<Order> fSink = getFileSink(env, appProperties);
-		DataStreamSink<Order> sink = orderStream.sinkTo(fSink).name("File Sink");
+		DataStreamSink<Order> sink = orderStream.sinkTo(fSink).name("S3 File Sink");
 
 		if(!isLocal(env) && appProperties.containsKey(SINK_PARALLELISM_KEY)) {
 			int sinkParallelism = Integer.parseInt(appProperties.get(SINK_PARALLELISM_KEY).toString());
@@ -169,7 +163,7 @@ public class StreamingJob {
 	}
 
 	public static void main(String[] args) throws Exception {
-		// set up the streaming execution environment
+		// Set up the streaming execution environment
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
 
@@ -190,9 +184,9 @@ public class StreamingJob {
 			}
 		}
 
-		runAppWithKafkaSource(env, appProperties);
+		runAppWithKinesisSource(env, appProperties);
 
 		// execute program
-		env.execute("KDA MSK to S3 Flink Streaming App");
+		env.execute("KDA Kinesis Data Streams to S3 Flink Streaming App");
 	} // main
 } // class

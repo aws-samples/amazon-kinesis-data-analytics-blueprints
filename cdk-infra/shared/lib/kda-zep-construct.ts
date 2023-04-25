@@ -1,4 +1,4 @@
-import { StackProps } from "aws-cdk-lib";
+import { IResolvable, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as kinesisanalyticsv2 from "aws-cdk-lib/aws-kinesisanalyticsv2";
@@ -7,8 +7,8 @@ import { aws_logs as logs } from "aws-cdk-lib";
 export interface KDAZepContructProps extends StackProps {
   account?: string;
   region?: string;
-  vpc: ec2.Vpc;
-  mskSG: ec2.SecurityGroup;
+  vpc: ec2.Vpc | undefined | null,
+  mskSG: ec2.SecurityGroup | undefined | null,
   logGroup: logs.LogGroup;
   logStream: logs.LogStream;
   kdaAppName: string;
@@ -25,6 +25,19 @@ export class KDAZepConstruct extends Construct {
 
   constructor(scope: Construct, id: string, props: KDAZepContructProps) {
     super(scope, id);
+
+    let vpcConfigurations = undefined as IResolvable | (IResolvable | kinesisanalyticsv2.CfnApplication.VpcConfigurationProperty)[] | undefined;
+    if(props!.vpc != undefined &&
+       props!.mskSG != undefined) {
+        vpcConfigurations = [
+            {
+                subnetIds: props.vpc.selectSubnets({
+                    subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+                  }).subnetIds,
+                securityGroupIds: [props.mskSG.securityGroupId]
+            }
+        ]
+    }
 
     // application properties (actual app is below)
     this.cfnApplicationProps = {
@@ -46,14 +59,7 @@ export class KDAZepConstruct extends Construct {
             autoScalingEnabled: false
           }
         },
-        vpcConfigurations: [
-          {
-            subnetIds: props.vpc.selectSubnets({
-              subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-            }).subnetIds,
-            securityGroupIds: [props.mskSG.securityGroupId],
-          },
-        ],
+        vpcConfigurations: vpcConfigurations,
         zeppelinApplicationConfiguration: {
           monitoringConfiguration: {
             logLevel: "INFO",
@@ -69,6 +75,14 @@ export class KDAZepConstruct extends Construct {
               mavenReference: {
                 groupId: "org.apache.flink",
                 artifactId: "flink-connector-kafka_2.12",
+                version: "1.13.2",
+              },
+            },
+            {
+              artifactType: "DEPENDENCY_JAR",
+              mavenReference: {
+                groupId: "org.apache.flink",
+                artifactId: "flink-sql-connector-kinesis_2.12",
                 version: "1.13.2",
               },
             },

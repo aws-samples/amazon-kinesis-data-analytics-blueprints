@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.amazonaws.services.kinesisanalytics</groupId>
-  <artifactId>msk-serverless-to-msk-serverless-datastream-java</artifactId>
-  <name>Flink KDA Quickstart Job</name>
+  <artifactId>kds-to-s3-datastream-java</artifactId>
+  <name>KDS to S3 DataStream App</name>
   <version>1.0.1</version>
   <build>
     <pluginManagement>
@@ -134,7 +134,8 @@
     </dependency>
   </dependencies>
   <properties>
-    <scala.binary.version>2.11</scala.binary.version>
+    <scala.binary.version>2.12</scala.binary.version>
+    <flink.format.parquet.version>1.12.2</flink.format.parquet.version>
     <maven.compiler.source>1.11</maven.compiler.source>
     <jackson.databind.version>2.13.4.2</jackson.databind.version>
     <jackson.version>2.13.4</jackson.version>
@@ -142,8 +143,8 @@
     <kafka.clients.version>2.4.1</kafka.clients.version>
     <maven.compiler.target>1.11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <log4j.version>2.17.1</log4j.version>
     <avro.version>1.9.2</avro.version>
+    <log4j.version>2.17.1</log4j.version>
     <kda.connectors.version>2.0.0</kda.connectors.version>
     <target.java.version>1.11</target.java.version>
     <jdk.version>11</jdk.version>

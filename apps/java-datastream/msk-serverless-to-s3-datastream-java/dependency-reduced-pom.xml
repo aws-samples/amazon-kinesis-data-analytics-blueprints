@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.amazonaws.services.kinesisanalytics</groupId>
   <artifactId>msk-serverless-to-s3-datastream-java</artifactId>
-  <name>Flink KDA Quickstart Job</name>
+  <name>MSK Serverless to S3 DataStream App</name>
   <version>1.0.1</version>
   <build>
     <pluginManagement>
@@ -139,7 +139,7 @@
     <maven.compiler.source>1.11</maven.compiler.source>
     <jackson.databind.version>2.13.4.2</jackson.databind.version>
     <jackson.version>2.13.4</jackson.version>
-    <flink.version>1.15.2</flink.version>
+    <flink.version>1.15.4</flink.version>
     <kafka.clients.version>2.4.1</kafka.clients.version>
     <maven.compiler.target>1.11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
