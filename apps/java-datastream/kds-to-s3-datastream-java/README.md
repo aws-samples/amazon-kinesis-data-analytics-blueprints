@@ -1,8 +1,8 @@
-# MSK Serverless to S3 (Java Datastream API)
+# KDS to S3 (Java Datastream API)
 
-This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth and writes to S3 using the Java DataStream API:
+This blueprint deploys a KDA app that reads from Kinesis Data Streams (KDS) using IAM auth and writes to S3 using the Java DataStream API:
 
-![Arch diagram](img/msk-kda-s3.png)
+![Arch diagram](img/kds-kda-s3.png)
 
 ## Project details
 
@@ -17,7 +17,7 @@ This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth a
 ## High-level deployment steps
 
 1. Build app and copy resulting JAR to S3 location
-2. Deploy associated infra (MSK and KDA) using CDK script
+2. Deploy associated infra (KDS and KDA) using CDK script
     - If using existing resources, you can simply update app properties in KDA.
 3. Perform data generation
 
@@ -25,7 +25,7 @@ This blueprint deploys a KDA app that reads from MSK Serverless using IAM auth a
 
 1. Maven
 2. AWS SDK v2
-2. AWS CDK v2 - for deploying associated infra (MSK and KDA app)
+2. AWS CDK v2 - for deploying associated infra (KDS Stream and KDA app)
 
 ## Step-by-step deployment walkthrough
 
@@ -54,9 +54,9 @@ mvn clean package
 aws s3 cp target/<<your generated jar>> ${S3_BUCKET}/{S3_FILE_KEY}
 ```
 
-4. Follow instructions in the [`cdk-infra`](cdk-infra/README.md) folder to deploy the infrastructure associated with this app - such as MSK Serverless and the Kinesis Data Analytics application.
+4. Follow instructions in the [`cdk-infra`](cdk-infra/README.md) folder to deploy the infrastructure associated with this app - such as the source KDS stream and the Kinesis Data Analytics application.
 
-5. Follow instructions in [orders-datagen](../../../datagen/orders-datagen/README.md) to create topic and generate data into MSK.
+5. Follow instructions in [orders-datagen](../../../datagen/orders-datagen/README.md) to create topic and generate data into the source KDS stream.
 
 6. Start your Kinesis Data Analytics application from the AWS console.
 
