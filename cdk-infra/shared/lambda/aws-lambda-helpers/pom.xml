@@ -5,12 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.amazonaws</groupId>
-  <artifactId>kafka-topic-gen-lambda</artifactId>
+  <artifactId>aws-lambda-helpers</artifactId>
   <version>1.0</version>
 
-  <name>kafka-topic-gen-lambda</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <name>aws-lambda-helpers</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,6 +29,11 @@
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <version>${kafka.clients.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.lambda</groupId>
+      <artifactId>powertools-cloudformation</artifactId>
+      <version>1.15.0</version>
     </dependency>
     <!-- IAM -->
     <dependency>

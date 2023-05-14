@@ -8,6 +8,13 @@ export interface GlobalProps extends StackProps {
     runtimeEnvironment: string;
     appSinkBucket: string;
     deployDataGen: boolean;
+    glueDatabaseName: string;
+    flinkVersion: string;
+    zepFlinkVersion: string;
+    kdaLogGroup: string;
+    kdaLogStream: string;
+    mskClusterName: string;
+    sourceTopicName: string;
 }
 export declare class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: GlobalProps);

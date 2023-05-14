@@ -2,7 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import { StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import { aws_s3 as s3 } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as glue from 'aws-cdk-lib/aws-glue';
 import { aws_logs as logs } from 'aws-cdk-lib';
 import { KDAConstruct } from '../../../../../cdk-infra/shared/lib/kda-construct';
 import { KDAZepConstruct } from '../../../../../cdk-infra/shared/lib/kda-zep-construct';
@@ -28,6 +30,29 @@ export interface GlobalProps extends StackProps {
 export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: GlobalProps) {
     super(scope, id, props);
+
+    // we'll be generating a CFN script so we need CFN params
+    let cfnParams = this.getParams(props);
+
+    // app package s3 bucket
+    const s3_bucket = new s3.Bucket(this, 'AppPackageS3Bucket', {
+      bucketName: cfnParams.get("appBucket")!.valueAsString,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      versioned: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // sink s3 bucket
+    const sink_s3_bucket = new s3.Bucket(this, 'SinkS3Bucket', {
+      bucketName: cfnParams.get("appSinkBucket")!.valueAsString,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      versioned: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
 
     // VPC
     const vpc = new ec2.Vpc(this, 'VPC', {
@@ -73,7 +98,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
 
     // This is the code for the lambda function that auto-creates the source topic
     // We need to pass in the path from the calling location
-    const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/kafka-topic-gen-lambda-1.0.jar';
+    const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/aws-lambda-helpers-1.0.jar';
 
     const topicCreationLambda = new TopicCreationLambdaConstruct(this, 'TopicCreationLambda', {
       account: this.account,
@@ -147,13 +172,23 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       ],
     });
 
+    // our KDA app needs to be able to write metrics
+    const accessCWMetricsPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          resources: ['*'],
+          actions: ['cloudwatch:PutMetricData'],
+        }),
+      ],
+    });
+
     // our KDA app needs access to read application jar from S3
     // as well as to write to S3 (from FileSink)
     const accessS3Policy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
-          resources: [`arn:aws:s3:::${props!.appBucket}/*`,
-                      `arn:aws:s3:::${props!.appSinkBucket}/*`],
+          resources: [`arn:aws:s3:::${s3_bucket.bucketName}/*`,
+                      `arn:aws:s3:::${sink_s3_bucket.bucketName}/*`],
           actions: ['s3:ListBucket',
                     's3:PutObject',
                     's3:GetObject',
@@ -221,6 +256,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
         AccessMSKPolicy: accessMSKPolicy,
         AccessMSKTopicsPolicy: accessMSKTopicsPolicy,
         AccessCWLogsPolicy: accessCWLogsPolicy,
+        AccessCWMetricsPolicy: accessCWMetricsPolicy,
         AccessS3Policy: accessS3Policy,
         AccessVPCPolicy: accessVPCPolicy,
         KDAAccessPolicy: kdaAccessPolicy,
@@ -230,14 +266,14 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     });
 
     const flinkApplicationProps = {
-      "S3DestinationBucket": `s3://${props!.appSinkBucket}/`,
+      "S3DestinationBucket": `s3://${sink_s3_bucket.bucketName}/`,
       "ServerlessMSKBootstrapServers": sourceServerlessMskCluster.bootstrapServersOutput.value,
       "KafkaSourceTopic": props!.sourceTopicName,
       "KafkaConsumerGroupId": "KDAFlinkConsumerGroup",
       "PartitionFormat": "yyyy-MM-dd-HH",
     };
 
-    // instantiate kda construct
+    // // instantiate kda construct
     const kdaConstruct = new KDAConstruct(this, 'KDAConstruct', {
       account: this.account,
       region: this.region,
@@ -246,7 +282,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
       logGroup: logGroup,
       logStream: logStream,
       kdaAppName: props!.kdaAppName,
-      appBucket: props!.appBucket,
+      appBucket: s3_bucket.bucketName,
       appFileKeyOnS3: props!.appFileKeyOnS3,
       runtimeEnvironment: props!.runtimeEnvironment,
       serviceExecutionRole: kdaAppRole.roleArn,
@@ -259,6 +295,14 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     kdaConstruct.node.addDependency(kdaAppRole);
     kdaConstruct.node.addDependency(logGroup);
     kdaConstruct.node.addDependency(logStream);
+
+    // instantiate glue db
+    const glueDB = new glue.CfnDatabase(this, 'GlueDB', {
+      catalogId: this.account,
+      databaseInput: {
+        name: cfnParams.get("glueDatabaseName")!.valueAsString
+      }
+    });
 
     // instantiate zep kda construct
     if (props?.deployDataGen) {
@@ -293,4 +337,32 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
     }
 
   } // constructor
+
+  getParams(props?: GlobalProps): Map<string, cdk.CfnParameter> {
+    let params = new Map<string, cdk.CfnParameter>();
+
+    const appBucket = new cdk.CfnParameter(this, "appBucket", {
+      type: "String",
+      default: props!.appBucket,
+      description: "The S3 bucket for storing app assets"
+    });
+    params.set("appBucket", appBucket);
+
+    const appSinkBucket = new cdk.CfnParameter(this, "appSinkBucket", {
+      type: "String",
+      default: props!.appSinkBucket,
+      description: "The S3 bucket to be used as the sink"
+    });
+    params.set("appSinkBucket", appSinkBucket);
+
+    const glueDatabaseName = new cdk.CfnParameter(this, "glueDatabaseName", {
+      type: "String",
+      default: props!.glueDatabaseName,
+      description: "The Glue catalog that will be used w/ Kinesis Data Analytics Studio"
+    });
+    params.set("glueDatabaseName", glueDatabaseName);
+
+    return params;
+
+  }
 } // class 

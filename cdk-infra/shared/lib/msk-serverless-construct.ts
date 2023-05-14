@@ -81,15 +81,8 @@ export class MSKServerlessContruct extends Construct {
 
         this.bootstrapServersOutput.node.addDependency(getBootstrapBrokers);
 
-        const topicCreationProvider = new cr.Provider(this, 'TopicCreationProvider', {
-            onEventHandler: props!.onEventLambdaFn,
-            logRetention: logs.RetentionDays.ONE_DAY
-        });
-
-        topicCreationProvider.node.addDependency(props!.onEventLambdaFn);
-
         const resource = new cdk.CustomResource(this, 'TopicCreationResource', {
-            serviceToken: topicCreationProvider.serviceToken,
+            serviceToken: props!.onEventLambdaFn.functionArn,
             properties:
             {
                 Broker: this.bootstrapServersOutput.value,
@@ -99,7 +92,28 @@ export class MSKServerlessContruct extends Construct {
             }
         });
 
-        resource.node.addDependency(props!.onEventLambdaFn);
+        props!.onEventLambdaFn.addDependency(this.cfnMskServerlessCluster);
         resource.node.addDependency(this.cfnMskServerlessCluster);
+        resource.node.addDependency(props!.onEventLambdaFn);
+
+        // 👇 create an output for topic creation response
+        const response = resource.getAtt('Response').toString();
+        const topicCreationResponseOutput = new cdk.CfnOutput(this, 'TopicCreationResponseOutput', {
+            value: response,
+            exportName: 'MSKTopicCreationResponse',
+        });
+
+        topicCreationResponseOutput.node.addDependency(props!.onEventLambdaFn);
+        topicCreationResponseOutput.node.addDependency(resource);
+
+        // 👇 create an output for topic name
+        const topicName = resource.getAtt('TopicName').toString();
+        const topicNameOutput = new cdk.CfnOutput(this, 'TopicName', {
+            value: topicName,
+            exportName: 'MSKTopicName',
+        });
+
+        topicNameOutput.node.addDependency(props!.onEventLambdaFn);
+        topicNameOutput.node.addDependency(resource);
     } // constructor
 } // class MSKConstruct

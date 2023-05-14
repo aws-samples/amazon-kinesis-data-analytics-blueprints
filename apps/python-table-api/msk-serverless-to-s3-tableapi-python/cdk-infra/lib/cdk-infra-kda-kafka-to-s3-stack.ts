@@ -75,7 +75,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
 
     // This is the code for the lambda function that auto-creates the source topic
     // We need to pass in the path from the calling location
-    const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/kafka-topic-gen-lambda-1.0.jar';
+    const lambdaAssetLocation = '../../../../cdk-infra/shared/lambda/aws-lambda-helpers-1.0.jar';
 
     const topicCreationLambda = new TopicCreationLambdaConstruct(this, 'TopicCreationLambda', {
       account: this.account,
@@ -145,6 +145,16 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
                     'logs:DescribeLogGroups',
                     'logs:DescribeLogStreams'
                    ],
+        }),
+      ],
+    });
+
+    // our KDA app needs to be able to write metrics
+    const accessCWMetricsPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          resources: ['*'],
+          actions: ['cloudwatch:PutMetricData'],
         }),
       ],
     });
@@ -223,6 +233,7 @@ export class CdkInfraKdaKafkaToS3Stack extends cdk.Stack {
         AccessMSKPolicy: accessMSKPolicy,
         AccessMSKTopicsPolicy: accessMSKTopicsPolicy,
         AccessCWLogsPolicy: accessCWLogsPolicy,
+        AccessCWMetricsPolicy: accessCWMetricsPolicy,
         AccessS3Policy: accessS3Policy,
         AccessVPCPolicy: accessVPCPolicy,
         KDAAccessPolicy: kdaAccessPolicy,

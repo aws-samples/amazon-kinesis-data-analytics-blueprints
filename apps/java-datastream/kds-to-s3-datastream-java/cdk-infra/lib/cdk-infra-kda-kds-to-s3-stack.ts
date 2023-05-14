@@ -58,6 +58,16 @@ export class CdkInfraKdaKdsToS3Stack extends cdk.Stack {
       ],
     });
 
+    // our KDA app needs to be able to write metrics
+    const accessCWMetricsPolicy = new iam.PolicyDocument({
+      statements: [
+        new iam.PolicyStatement({
+          resources: ['*'],
+          actions: ['cloudwatch:PutMetricData'],
+        }),
+      ],
+    });
+
     // our KDA app needs access to read application jar from S3
     // as well as to write to S3 (from FileSink)
     const accessS3Policy = new iam.PolicyDocument({
@@ -129,6 +139,7 @@ export class CdkInfraKdaKdsToS3Stack extends cdk.Stack {
       inlinePolicies: {
         AccessKDSPolicy: accessKdsPolicy,
         AccessCWLogsPolicy: accessCWLogsPolicy,
+        AccessCWMetricsPolicy: accessCWMetricsPolicy,
         AccessS3Policy: accessS3Policy,
         KDAAccessPolicy: kdaAccessPolicy,
         GlueAccessPolicy: glueAccessPolicy,
@@ -198,4 +209,12 @@ export class CdkInfraKdaKdsToS3Stack extends cdk.Stack {
     }
 
   } // constructor
+
+  getParams(): void {
+    const appTemplateBucket = new cdk.CfnParameter(this, "appTemplateBucket", {
+      type: "String",
+      description: "The (pre-existing) bucket that will hold the CFN template script and assets."
+    });
+
+  }
 } // class 
