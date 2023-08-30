@@ -1,4 +1,11 @@
-# Blueprints: Kinesis Data Analytics for Apache Flink
+# Blueprints: Amazon Managed Service for Apache Flink
+
+>  #### 🚨 August 30, 2023: Amazon Kinesis Data Analytics has been renamed to [Amazon Managed Service for Apache Flink](https://aws.amazon.com/managed-service-apache-flink).
+--------
+
+### ⛔️ This blueprints application is obsolete. Please refer to the [new repository](https://github.com/awslabs/managed-service-for-apache-flink-blueprints/)
+
+-------
 
 ## 🗺️ 📐 🛠️ 🏗
 
